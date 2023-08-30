@@ -44,33 +44,54 @@ securedRouter.use(requiresAuth());
 
 // Rota de pesquisa
 //ta retornando apenas os documentos que possuem palavra igual do input no title 
-app.get("/search", async (req, res) => {
+// ...
+
+securedRouter.get("/search", async (req, res) => {
+  const query = req.query.query;
+  console.log("Received query:", query);
+
   const result = await elasticClient.search({
     index: "base_dados_tri",
     body: {
       query: {
-        multi_match: {
-          query: req.query.query,
-          fields: ["title", "body"]
-        }
-      }
-    }
+        bool: {
+          should: [
+            {
+              match: {
+                title: {
+                  query,
+                  fuzziness: "AUTO", // Fuzzy search for title
+                },
+              },
+            },
+            {
+              match: {
+                body: {
+                  query,
+                  fuzziness: "AUTO", // Fuzzy search for body
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
   });
+
+  console.log("Elasticsearch result:", result);
   res.json(result);
 });
 
 
 
-  securedRouter.get("/posts", async (req, res) => {
-    const result = await elasticClient.search({
-      index: "base_dados_tri",
-      query: { match_all: {} },
-    });
-  
-    res.send(result);
+
+securedRouter.get("/posts", async (req, res) => {
+  const result = await elasticClient.search({
+    index: "base_dados_tri",
+    query: { match_all: {} },
   });
-  
-  
+  res.send(result);
+  });
   
 app.use(securedRouter);
 app.listen(8080);

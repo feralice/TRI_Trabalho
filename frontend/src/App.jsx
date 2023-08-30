@@ -96,8 +96,11 @@ const App = () => {
 
   const handleSearch = (event) => {
     event.preventDefault();
+    console.log("Query before filtering:", query);
+
     const filtered = posts.filter((post) =>
-      post.title.toLowerCase().includes(query.toLowerCase())
+      post.title.toLowerCase().includes(query.toLowerCase()) ||
+      post.body.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredPosts(filtered);
   };
@@ -130,20 +133,17 @@ const App = () => {
       <div id="searchResults">
         <Container maxWidth="md">
           <div style={{ width: "100%" }}>
-          // ...
-<div id="searchResults">
-  <Container maxWidth="md">
-    <List>
-      {filteredPosts.map((post) => (
-        <ListItem key={post.id} sx={{ border: "1px solid #ddd", borderRadius: "4px", marginBottom: "8px" }}>
-          <ListItemText primary={post.title} secondary={post.body} />
-        </ListItem>
-      ))}
-    </List>
-  </Container>
-</div>
-// ...
-
+            <div id="searchResults">
+              <Container maxWidth="md">
+                <List>
+                  {filteredPosts.map((post) => (
+                    <ListItem key={post.id} sx={{ border: "1px solid #ddd", borderRadius: "4px", marginBottom: "8px" }}>
+                      <ListItemText primary={post.title} secondary={post.body} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Container>
+            </div>
           </div>
         </Container>
       </div>
