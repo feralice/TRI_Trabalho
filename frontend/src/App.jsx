@@ -1,72 +1,58 @@
 import React, { useState, useEffect } from "react";
-import { Container,  List, ListItem, ListItemText, } from "@mui/material";
+import { Container, List, ListItem, ListItemText } from "@mui/material";
 import axios from "axios";
 import { AppBar, Toolbar, Box, Button } from "@mui/material";
 import "./style.css";
 
+// Funções de API para interação com o servidor
 const api = {
   async search(query) {
     const response = await axios.get(`/api/search?query=${query}`);
-    return response.data;s
+    return response.data; // Retorna os dados da pesquisa
   },
   async getAllPosts() {
     const response = await axios.get("/api/posts");
-    return response.data;
+    return response.data; // Retorna todos os posts
   },
   async isAuthenticated() {
     const response = await axios.get("/api/is-authenticated");
-    return response.data;
+    return response.data; // Retorna informações de autenticação
   },
 };
 
-const columns = [
-  {
-    field: "title",
-    headerName: "title",
-    flex: 1,
-    minWidth: 200,
-    cellClassName: "data-grid-cell",
-  },
-  {
-    field: "body",
-    headerName: "body",
-    flex: 1,
-    minWidth: 200,
-    cellClassName: "data-grid-cell", 
-  },
-];
-
+// Componente do menu superior
 const TopMenu = (props) => {
   return (
-    <Box sx={{ flexGrow: 1, mb: 1 }}>
-      <AppBar position="static" sx={{ boxShadow: "none" }}>
-        <Toolbar>
-          <div style={{ flex: 1 }}></div>
-          {props.username ? (
-            <>
-              <span>{props.username}</span>
-              <Button color="inherit" href="/api/logout">
-                LOGOUT
-              </Button>
-            </>
-          ) : (
-            <Button color="inherit" href="/api/login" className="logout-button">
-              Login
+    <AppBar position="static" sx={{ boxShadow: "none" }}>
+      <Toolbar>
+        <div style={{ flex: 1 }}></div>
+        {props.username ? (
+          // Se o usuário estiver autenticado, mostra o nome e botão de logout
+          <>
+            <span>{props.username}</span>
+            <Button color="inherit" href="/api/logout">
+              LOGOUT
             </Button>
-          )}
-        </Toolbar>
-      </AppBar>
-    </Box>
+          </>
+        ) : (
+          // Caso contrário, mostra botão de login
+          <Button color="inherit" href="/api/login" className="logout-button">
+            Login
+          </Button>
+        )}
+      </Toolbar>
+    </AppBar>
   );
 };
 
+// Componente principal
 const App = () => {
   const [posts, setPosts] = useState([]);
-  const [selection, setSelection] = useState([]);
   const [query, setQuery] = useState("");
   const [username, setUsername] = useState("");
   const [filteredPosts, setFilteredPosts] = useState([]);
 
+  // Função para verificar autenticação do usuário
   const loadUser = async () => {
     const response = await api.isAuthenticated();
 
@@ -79,6 +65,7 @@ const App = () => {
     return false;
   };
 
+  // Efeito para carregar os posts quando o componente é montado
   useEffect(() => {
     loadUser().then((authenticated) => {
       if (authenticated) {
@@ -94,6 +81,7 @@ const App = () => {
     });
   }, []);
 
+  // Função para lidar com a pesquisa
   const handleSearch = (event) => {
     event.preventDefault();
     console.log("Query before filtering:", query);
@@ -107,11 +95,13 @@ const App = () => {
 
   return (
     <div>
+      {/* Renderiza o menu superior com base na autenticação */}
       <TopMenu username={username} />
       <div id="cover">
         <form id="searchForm" onSubmit={handleSearch}>
           <div className="tb">
             <div className="td">
+              {/* Campo de pesquisa */}
               <input
                 type="text"
                 id="searchInput"
@@ -122,6 +112,7 @@ const App = () => {
               />
             </div>
             <div className="td" id="s-cover">
+              {/* Botão de pesquisa */}
               <button type="submit">
                 <div id="s-circle"></div>
                 <span></span>
@@ -134,10 +125,18 @@ const App = () => {
         <Container maxWidth="md">
           <div style={{ width: "100%" }}>
             <div id="searchResults">
+              {/* Renderiza a lista de resultados da pesquisa */}
               <Container maxWidth="md">
                 <List>
                   {filteredPosts.map((post) => (
-                    <ListItem key={post.id} sx={{ border: "1px solid #ddd", borderRadius: "4px", marginBottom: "8px" }}>
+                    <ListItem
+                      key={post.id}
+                      sx={{
+                        border: "1px solid #ddd",
+                        borderRadius: "4px",
+                        marginBottom: "8px",
+                      }}
+                    >
                       <ListItemText primary={post.title} secondary={post.body} />
                     </ListItem>
                   ))}

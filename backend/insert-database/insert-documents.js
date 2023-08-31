@@ -5,8 +5,10 @@ const fastcsv = require('fast-csv');
 const elasticClient = require('../client-connection/elastic-client');
 
 const csvFilePath = 'C:/Users/Fernanda Alice/Documents/UFAM/5-periodo/TRI/TPElasticSearch/base-de-dados.csv';
-const indexName = 'base_dados_tri'; // Nome do índice alterado para "base_dados_tri"
+const indexName = 'base_dados_tri'; 
 
+//Código para mandar nossa base de dados em csv para o elasticsearch
+//para isso, tranformamos primeiro em json
 fs.createReadStream(csvFilePath)
   .pipe(fastcsv.parse({ headers: true }))
   .on('data', async row => {

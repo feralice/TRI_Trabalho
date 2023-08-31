@@ -1,4 +1,4 @@
-//cria um indice mandando todos os dados do csv do trabalho 1
+//cria um novo indice
 const elasticClient = require("./elastic-client");
 
 const createIndex = async (indexName) => {
@@ -6,4 +6,5 @@ const createIndex = async (indexName) => {
   console.log("Índice criado");
 };
 
-createIndex("base_dados_tri"); // Alterado o nome do índice para "base_dados_tri"
+//indice criado para colocar nossa base de dados
+createIndex("base_dados_tri"); 
