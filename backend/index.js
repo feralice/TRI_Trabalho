@@ -68,8 +68,6 @@ securedRouter.get("/search", async (req, res) => {
           query,
           // Campos onde a pesquisa será executada
           fields: ["title", "body"],
-          // Permite correspondências aproximadas
-          fuzziness: "AUTO", 
         }, 
       },
     },
@@ -77,18 +75,6 @@ securedRouter.get("/search", async (req, res) => {
   
   console.log("Elasticsearch resultado:", result);
   res.json(result);
-});
-
-//rota para buscar todos os posts
-securedRouter.get("/posts", async (req, res) => {
-  const result = await elasticClient.search({
-    index: "base_dados_tri",
-    body: {
-      size: 20,
-      query: { match_all: {} },
-    },
-  });
-  res.send(result);
 });
 
 app.use(securedRouter);

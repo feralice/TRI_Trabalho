@@ -127,7 +127,9 @@ const App = () => {
                   {filteredPosts.map((post) => (
                     <Accordion key={post.id} sx={{ backgroundColor: '#fce9e9' }}>
                       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography variant="h6">{post.title}</Typography>
+                        <Typography variant="h6">
+                        ID: {post.id} {post.title} - 
+                        </Typography>
                       </AccordionSummary>
                       <AccordionDetails>
                         <Typography>{post.body}</Typography>
