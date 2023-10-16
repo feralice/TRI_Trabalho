@@ -56,6 +56,9 @@ const App = () => {
   const [query, setQuery] = useState("");
   const [username, setUsername] = useState("");
   const [filteredPosts, setFilteredPosts] = useState([]);
+  const [searchTime, setSearchTime] = useState(0);
+  const [documentCount, setDocumentCount] = useState(0);
+  const [dcgAt10, setDcgAt10] = useState(0); 
 
   const loadUser = async () => {
     const response = await api.isAuthenticated();
@@ -71,25 +74,40 @@ const App = () => {
   useEffect(() => {
     loadUser().then((authenticated) => {
       if (authenticated) {
+        const searchStartTime = performance.now();
+        let index = 0;
+  
         api.search(query).then((response) => {
           setPosts(
-            response.hits.hits.map((hit) => ({
+            response.result.hits.hits.map((hit) => ({
               id: hit._id,
+              position: ++index,
+              dcg: hit.dcgs,
               ...hit._source,
             }))
           );
+          const searchEndTime = performance.now();
+          const searchTimeMilliseconds = searchEndTime - searchStartTime;
+          const searchTimeSeconds = (searchTimeMilliseconds / 1000).toFixed(2);
+  
+          setSearchTime(searchTimeSeconds);
+          setDocumentCount(response.result.hits.total.value);
+          setDcgAt10(response.dcgAt10); 
         });
       }
     });
-  }, [query]);
+  }, [query]);  
 
   const handleSearch = (event) => {
     event.preventDefault();
 
-    const filtered = posts.filter((post) =>
-      post.title.toLowerCase().includes(query.toLowerCase()) ||
-      post.body.toLowerCase().includes(query.toLowerCase())
-    );
+    const filtered = posts
+      .filter((post) =>
+        post.title.toLowerCase().includes(query.toLowerCase()) ||
+        post.body.toLowerCase().includes(query.toLowerCase())
+      )
+      .map((post, index) => ({ ...post, position: index + 1 }));
+
     setFilteredPosts(filtered);
   };
 
@@ -123,12 +141,28 @@ const App = () => {
           <div style={{ width: "100%" }}>
             <div id="searchResults">
               <Container maxWidth="md">
+                <div id="textos">
+                <Typography variant="body2" sx={{ marginTop: "16px" }}>
+                  Tempo de Pesquisa: {searchTime} segundos
+                </Typography>
+                <Typography variant="body2" sx={{ marginTop: "16px" }}>
+                  Quantidade de Documentos Retornados: {documentCount}
+                </Typography>
+                <Typography variant="body2" sx={{ marginTop: "16px" }}>
+                  DCG @10: {dcgAt10}
+                </Typography>
+                </div>
                 <List>
                   {filteredPosts.map((post) => (
-                    <Accordion key={post.id} sx={{ backgroundColor: '#fce9e9' }}>
+                    <Accordion key={post.id} sx={{ backgroundColor: "#fce9e9" }}>
                       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <Typography variant="h6">
-                        ID: {post.id} {post.title} 
+                          Posição: {post.position}
+                          <br />
+                          ID: {post.id}
+                          <br />
+                          {post.title}
+                          <br />
                         </Typography>
                       </AccordionSummary>
                       <AccordionDetails>
