@@ -7,7 +7,7 @@ const indexName = 'base_dados_tri';  // Nome do índice
 
 const createIndex = async (indexName) => {
   try {
-    // Criação do índice
+
     await elasticClient.indices.create({ index: indexName });
     console.log('Índice criado:', indexName);
   } catch (error) {
@@ -19,9 +19,9 @@ const insertDocuments = async () => {
   createIndex(indexName);
 
   fs.createReadStream(csvFilePath)
-    .pipe(fastcsv.parse({ headers: true }))  // Considerando que a primeira linha é o cabeçalho
+    .pipe(fastcsv.parse({ headers: true })) 
     .on('data', async (row) => {
-      // Mapeando os campos do CSV
+
       const document = {
         id: row.id,
         body: row.body,

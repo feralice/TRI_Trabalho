@@ -29,91 +29,67 @@ const api = {
   },
 };
 
-const TopMenu = (props) => {
-  return (
-    <AppBar position="static" sx={{ boxShadow: "none" }}>
-      <Toolbar>
-        <div style={{ flex: 1 }}></div>
-        {props.username ? (
-          <>
-            <span>{props.username}</span>
-            <Button color="inherit" href="/api/logout">
-              LOGOUT
-            </Button>
-          </>
-        ) : (
-          <Button color="inherit" href="/api/login" className="logout-button">
-            Login
-          </Button>
-        )}
-      </Toolbar>
-    </AppBar>
-  );
-};
-
 const App = () => {
   const [posts, setPosts] = useState([]);
+  const [searchButtonClicked, setSearchButtonClicked] = useState(false);
   const [query, setQuery] = useState("");
-  const [username, setUsername] = useState("");
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [searchTime, setSearchTime] = useState(0);
   const [documentCount, setDocumentCount] = useState(0);
   const [dcgAt10, setDcgAt10] = useState(0); 
 
-  const loadUser = async () => {
-    const response = await api.isAuthenticated();
-
-    if (response.authenticated) {
-      setUsername(response.username);
-      return true;
-    }
-
-    return false;
-  };
-
   useEffect(() => {
-    loadUser().then((authenticated) => {
-      if (authenticated) {
-        const searchStartTime = performance.now();
-        let index = 0;
+    if (searchButtonClicked) {
+      const searchStartTime = performance.now();
+      let index = 0;
   
-        api.search(query).then((response) => {
-          setPosts(
-            response.result.hits.hits.map((hit) => ({
-              id: hit._id,
-              position: ++index,
-              dcg: hit.dcgs,
-              ...hit._source,
-            }))
-          );
-          const searchEndTime = performance.now();
-          const searchTimeMilliseconds = searchEndTime - searchStartTime;
-          const searchTimeSeconds = (searchTimeMilliseconds / 1000).toFixed(2);
+      api.search(query).then((response) => {
+        setPosts(
+          response.result.hits.hits.map((hit) => ({
+            id: hit._id,
+            position: ++index,
+            dcg: hit.dcgs,
+            ...hit._source,
+          }))
+        );
   
-          setSearchTime(searchTimeSeconds);
-          setDocumentCount(response.result.hits.total.value);
-          setDcgAt10(response.dcgAt10); 
-        });
-      }
-    });
-  }, [query]);  
+        const searchEndTime = performance.now();
+        const searchTimeMilliseconds = searchEndTime - searchStartTime;
+        const searchTimeSeconds = (searchTimeMilliseconds / 1000).toFixed(2);
+  
+        setSearchTime(searchTimeSeconds);
+        setDocumentCount(response.result.hits.total.value);
+        setDcgAt10(response.dcgAt10);
+      });
+  
+      setSearchButtonClicked(false); 
+    }
+  }, [query, searchButtonClicked]); 
+  
 
-  const handleSearch = (event) => {
+  const handleSearch = async (event) => {
     event.preventDefault();
 
-    const filtered = posts
-      .filter((post) =>
-        post.title.toLowerCase().includes(query.toLowerCase()) ||
-        post.body.toLowerCase().includes(query.toLowerCase())
-      )
-      .map((post, index) => ({ ...post, position: index + 1 }));
+    try {
+      const response = await api.search(query);
+      const searchResults = response.result.hits.hits;
 
-    setFilteredPosts(filtered);
+      const filtered = searchResults.map((hit, index) => ({
+        id: hit._id,
+        position: index + 1,
+        dcg: hit.dcgs,
+        ...hit._source,
+      }));
+
+      setFilteredPosts(filtered);
+      setSearchButtonClicked(true);
+    } catch (error) {
+      console.error("Erro ao buscar documentos", error);
+    }
   };
 
   return (
     <div>
-      <TopMenu username={username} />
       <div id="cover">
         <form id="searchForm" onSubmit={handleSearch}>
           <div className="tb">

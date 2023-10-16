@@ -51,6 +51,7 @@ form {
 }
 
 input[type="text"] {
+  width: 100%;
   height: 40px;
   font-size: 30px;
   background-color: transparent;
@@ -167,7 +168,6 @@ button span:after {
   left: 0;
   right: 0;
   background-color:#fce9e9;
-  padding: 20px;
   border-radius: 20px;
   z-index: 0;
 }
@@ -182,6 +182,8 @@ button span:after {
   overflow-wrap: break-word;
   word-wrap: break-word;
 }
-
+#textos{
+  margin-bottom: 20px;
+}
 
 

@@ -2,48 +2,10 @@ const { performance } = require('perf_hooks');
 const express = require('express');
 const bodyParser = require('body-parser');
 const elasticClient = require('./elastic-client');
-const { auth, requiresAuth } = require('express-openid-connect');
-require('dotenv').config({ path: '.okta.env' });
 require('express-async-errors');
 
 const app = express();
-
 app.use(bodyParser.json());
-app.use(
-  auth({
-    issuerBaseURL: process.env.OKTA_OAUTH2_ISSUER,
-    clientID: process.env.OKTA_OAUTH2_CLIENT_ID,
-    clientSecret: process.env.OKTA_OAUTH2_CLIENT_SECRET,
-    secret: process.env.OKTA_OAUTH2_CLIENT_SECRET,
-    baseURL: 'http://localhost:8080',
-    idpLogout: true,
-    authRequired: false,
-    authorizationParams: {
-      scope: 'openid profile',
-      response_type: 'code',
-    },
-  })
-);
-
-// Rotas
-app.get('/is-authenticated', (req, res) => {
-  const authenticated = req.oidc.isAuthenticated();
-  if (authenticated) {
-    res.json({
-      authenticated,
-      username: req.oidc.user.name,
-    });
-  } else {
-    res.json({ authenticated: false });
-  }
-});
-
-app.get('/', (req, res) => {
-  res.redirect('http://localhost:5173/');
-});
-
-const securedRouter = express.Router();
-securedRouter.use(requiresAuth());
 
 function calculateRelevance(score, maxScore) {
   const normalizedScore = score / maxScore;
@@ -57,7 +19,12 @@ function calculateRelevance(score, maxScore) {
   else return 0;
 }
 
-securedRouter.get('/search', async (req, res) => {
+// Rotas
+app.get('/', (req, res) => {
+  res.redirect('http://localhost:5173/');
+});
+
+app.get('/search', async (req, res) => {
   const query = req.query.query;
 
   const startTime = performance.now();
@@ -113,7 +80,6 @@ securedRouter.get('/search', async (req, res) => {
 });
 
 const PORT = 8080;
-app.use(securedRouter);
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
